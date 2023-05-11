@@ -2,7 +2,51 @@ import { useState, useEffect } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import axios from "axios";
+
 const TITLE = "React GraphQL GitHub";
+const GET_ORGANIZATION = `
+  {
+    organization(login: "the-road-to-learn-react") {
+      name
+      url
+    }
+  }
+`;
+
+const GET_REPOSITORY_OF_ORGANIZATION = `
+  {
+    organization(login: "the-road-to-learn-react") {
+      name
+      url
+      repository(name: "the-road-to-learn-react") {
+        name
+        url
+      }
+    }
+  }
+`;
+
+const GET_ISSUES_OF_REPOSITORY = `
+  {
+    organization(login: "the-road-to-learn-react") {
+      name
+      url
+      repository(name: "the-road-to-learn-react") {
+        name
+        url
+        issues(last: 5) {
+          edges {
+            node {
+              id
+              title
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 const axiosGitHubGraphQL = axios.create({
   baseURL: "https://api.github.com/graphql",
@@ -15,10 +59,8 @@ const App = () => {
   const [path, setPath] = useState(
     "the-road-to-learn-react/the-road-to-learn-react"
   );
-
-  useEffect(() => {
-    // fetch data
-  }, []);
+  const [organization, setOrganization] = useState(null);
+  const [errors, setErrors] = useState(null);
 
   const handleSubmit = (e) => {
     // fetch data
@@ -28,6 +70,30 @@ const App = () => {
   const handleChange = (e) => {
     setPath(e.target.value);
   };
+
+  const handleFetchFromGitHub = async () => {
+    const result = await axiosGitHubGraphQL.post("", {
+      query: GET_ISSUES_OF_REPOSITORY,
+    });
+    setOrganization(result?.data?.data?.organization);
+    console.log(`organization: ${JSON.stringify(organization)}`);
+    setErrors(result?.data?.data?.errors);
+    return result;
+  };
+
+  useEffect(() => {
+    // fetch data
+    handleFetchFromGitHub();
+  }, []);
+
+  if (errors) {
+    return (
+      <p>
+        <strong>Something went wrong:</strong>
+        {errors.map((error) => error.message).join(" ")}
+      </p>
+    );
+  }
 
   return (
     <div className="App">
@@ -44,6 +110,45 @@ const App = () => {
         <button type="submit">Search</button>
       </form>
       <hr />
+      {organization ? (
+        <Organization organization={organization} />
+      ) : (
+        <p>No information yet...</p>
+      )}
+    </div>
+  );
+};
+
+const Organization = ({ organization }) => {
+  return (
+    <div>
+      <p>
+        <strong>Issues from Organization </strong>
+        <a href={organization?.url} target="_blank">
+          {organization?.name}
+        </a>
+        <Repository repository={organization.repository} />
+      </p>
+    </div>
+  );
+};
+
+const Repository = ({ repository }) => {
+  return (
+    <div>
+      <p>
+        <strong>In Repository:</strong>
+        <a href={repository?.url} target="_blank">
+          {repository?.name}
+        </a>
+      </p>
+      {repository.issues.edges.map((issue) => (
+        <li key={issue.node.id}>
+          <a href={issue.node.url} target="_blank">
+            {issue.node.title}
+          </a>
+        </li>
+      ))}
     </div>
   );
 };
