@@ -27,11 +27,33 @@ const GET_REPOSITORY_OF_ORGANIZATION = `
 `;
 
 const GET_ISSUES_OF_REPOSITORY = `
+    query ($organization: String!, $repository: String!) {
+      organization(login: $organization) {
+        name
+        url
+        repository(name: $repository) {
+          name
+          url
+          issues(last: 5) {
+            edges {
+              node {
+                id
+                title
+                url
+              }
+            }
+          }
+        }
+      }
+    }
+`;
+
+const getIssuesOfRepositoryQuery = (organization, repository) => `
   {
-    organization(login: "the-road-to-learn-react") {
+    organization(login: "${organization}") {
       name
       url
-      repository(name: "the-road-to-learn-react") {
+      repository(name: "${repository}") {
         name
         url
         issues(last: 5) {
@@ -55,12 +77,25 @@ const axiosGitHubGraphQL = axios.create({
   },
 });
 
+const getIssuesOfRepository = async (path) => {
+  const [organization, repository] = path.split("/");
+
+  const result = await axiosGitHubGraphQL.post("", {
+    query: GET_ISSUES_OF_REPOSITORY,
+    variables: { organization, repository },
+  });
+
+  return result;
+};
+
 const App = () => {
   const [path, setPath] = useState(
     "the-road-to-learn-react/the-road-to-learn-react"
   );
   const [organization, setOrganization] = useState(null);
   const [errors, setErrors] = useState(null);
+
+  useEffect(() => {}, []);
 
   const handleSubmit = (e) => {
     // fetch data
@@ -72,18 +107,16 @@ const App = () => {
   };
 
   const handleFetchFromGitHub = async () => {
-    const result = await axiosGitHubGraphQL.post("", {
-      query: GET_ISSUES_OF_REPOSITORY,
-    });
-    setOrganization(result?.data?.data?.organization);
-    console.log(`organization: ${JSON.stringify(organization)}`);
-    setErrors(result?.data?.data?.errors);
+    const result = await getIssuesOfRepository(path);
+    console.log(result);
+    setOrganization(result.data.data.organization);
+    setErrors(result?.data?.errors);
     return result;
   };
 
   useEffect(() => {
     // fetch data
-    handleFetchFromGitHub();
+    handleFetchFromGitHub(path);
   }, []);
 
   if (errors) {
@@ -137,7 +170,7 @@ const Repository = ({ repository }) => {
   return (
     <div>
       <p>
-        <strong>In Repository:</strong>
+        <strong>In Repository: </strong>
         <a href={repository?.url} target="_blank">
           {repository?.name}
         </a>
