@@ -52,19 +52,30 @@ console.log(`token ${process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN}`);
 // `;
 
 const GET_REPOSITORIES_OF_ORGANIZATION = gql`
-  query ($organization: String!) {
+  query ($organization: String!, $cursor: String) {
     organization(login: $organization) {
       name
       url
-      repositories(first: 5) {
+      repositories(
+        first: 5
+        orderBy: { direction: DESC, field: STARGAZERS }
+        after: $cursor
+      ) {
         edges {
           node {
-            name
-            url
+            ...repository
           }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
         }
       }
     }
+  }
+  fragment repository on Repository {
+    name
+    url
   }
 `;
 
@@ -73,9 +84,43 @@ client
     query: GET_REPOSITORIES_OF_ORGANIZATION,
     variables: {
       organization: "the-road-to-learn-react",
+      cursot: undefined,
     },
   })
-  .then((result) => console.log(result));
+  .then((result) => {
+    //resolve first page
+    const { pageInfo, edges } = result.data.organization.repositories;
+    const { endCursor, hasNextPage } = pageInfo;
+
+    console.log("second page", edges.length);
+    console.log("endCursor", endCursor);
+
+    return pageInfo;
+  })
+  .then(({ endCursor, hasNextPage }) => {
+    // query second page
+    if (!hasNextPage) {
+      throw Error("no next page");
+    }
+    return client.query({
+      query: GET_REPOSITORIES_OF_ORGANIZATION,
+      variables: {
+        organization: "the-road-to-learn-react",
+        cursor: endCursor,
+      },
+    });
+  })
+  .then((result) => {
+    // resolve second page
+    const { pageInfo, edges } = result.data.organization.repositories;
+    const { endCursor, hasNextPage } = pageInfo;
+
+    console.log("second page", edges.length);
+    console.log("endCursor", endCursor);
+
+    return pageInfo;
+  })
+  .catch(console.log);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
