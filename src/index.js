@@ -15,41 +15,24 @@ import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
   uri: "https://api.github.com/graphql",
+  headers: {
+    authorization: `Bearer ${process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN}`,
+  },
 });
 
-const authLink = setContext((_, { headers }) => {
-  return {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN}`,
-    },
-  };
-});
+// const authLink = setContext((_, { headers }) => {
+//   return {
+//     headers: {
+//       ...headers,
+//       Authorization: `Bearer ${process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN}`,
+//     },
+//   };
+// });
 
 const client = new ApolloClient({
-  uri: "https://api.github.com/graphql",
   cache: new InMemoryCache(),
-  link: authLink.concat(httpLink),
+  link: httpLink,
 });
-
-console.log(`token ${process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN}`);
-
-// const GET_ORGANIZATION = gql`
-//   query ($organization: String!) {
-//     organization(login: $organization) {
-//       name
-//       url
-//       repositories(first: 5) {
-//         edges {
-//           node {
-//             name
-//             url
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
 
 const GET_REPOSITORIES_OF_ORGANIZATION = gql`
   query ($organization: String!, $cursor: String) {
@@ -154,7 +137,7 @@ client
   .then(console.log);
 
 client
-  .mutation({
+  .mutate({
     mutation: REMOVE_STAR,
     variables: {
       repositoryId: "MDEwOlJlcG9zaXRvcnk3Mzk0OTg1MQ==",
@@ -164,9 +147,9 @@ client
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
+  <ApolloProvider client={client}>
     <App />
-  </React.StrictMode>
+  </ApolloProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function
