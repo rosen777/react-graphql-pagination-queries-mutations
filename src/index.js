@@ -79,6 +79,28 @@ const GET_REPOSITORIES_OF_ORGANIZATION = gql`
   }
 `;
 
+const ADD_STAR = gql`
+  mutation AddStar($repositoryId: ID!) {
+    addStar(input: { starrableId: $repositoryId }) {
+      starrable {
+        id
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
+const REMOVE_STAR = gql`
+  mutation RemoveStar($repositoryId: ID!) {
+    removeStar(input: { starrableId: $repositoryId }) {
+      starrable {
+        id
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
 client
   .query({
     query: GET_REPOSITORIES_OF_ORGANIZATION,
@@ -121,6 +143,24 @@ client
     return pageInfo;
   })
   .catch(console.log);
+
+client
+  .mutate({
+    mutation: ADD_STAR,
+    variables: {
+      repositoryId: "MDEwOlJlcG9zaXRvcnk3Mzk0OTg1MQ==",
+    },
+  })
+  .then(console.log);
+
+client
+  .mutation({
+    mutation: REMOVE_STAR,
+    variables: {
+      repositoryId: "MDEwOlJlcG9zaXRvcnk3Mzk0OTg1MQ==",
+    },
+  })
+  .then(console.log);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
