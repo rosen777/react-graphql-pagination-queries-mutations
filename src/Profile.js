@@ -2,6 +2,7 @@ import React from "react";
 import { gql, useQuery } from "@apollo/client";
 import { Loading } from "./Loading";
 import RepositoryList from "./Repository";
+import { ErrorMessage } from "./Error";
 
 const GET_CURRENT_USER = gql`
   query GetCurrentUser {
@@ -49,8 +50,8 @@ export const Profile = () => {
   const viewer = data?.viewer;
   console.log(`Profile Data: ${JSON.stringify(data)}`);
 
+  if (error) return <ErrorMessage error={error} />;
   if (loading || !viewer) return <Loading />;
-  if (error) return `Error: ${error.message}`;
 
   return <RepositoryList repositories={viewer.repositories} />;
 };
