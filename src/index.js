@@ -8,10 +8,8 @@ import {
   InMemoryCache,
   ApolloProvider,
   createHttpLink,
-  gql,
 } from "@apollo/client";
 import "cross-fetch/polyfill";
-import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
   uri: "https://api.github.com/graphql",
