@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -12,6 +12,17 @@ import {
 } from "@apollo/client";
 import "cross-fetch/polyfill";
 import { onError } from "@apollo/client/link/error";
+import { createRoot } from "react-dom/client";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Route,
+  Link,
+} from "react-router-dom";
+import { Profile } from "./Profile";
+import { Organization } from "./Organization";
+import * as routes from "./constants/routes";
+import Navigation from "./Navigation";
 
 const httpLink = createHttpLink({
   uri: "https://api.github.com/graphql",
