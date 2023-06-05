@@ -93,7 +93,7 @@ const IssueList = ({ issues, isShow, issueState, onChangeIssueState }) => {
     <div className="IssueList">
       <ButtonUnobtrusive
         onClick={() => onChangeIssueState(TRANSITION_STATE[issueState])}>
-        {TRANSITION_STATE[issueState]}
+        {TRANSITION_LABELS[issueState]}
       </ButtonUnobtrusive>
       {isShow(issueState) &&
         issues.edges.map(({ node }) => (
