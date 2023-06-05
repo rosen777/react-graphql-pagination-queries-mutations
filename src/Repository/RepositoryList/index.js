@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 import { RepositoryItem } from "../RepositoryItem";
 import { FetchMore } from "../FetchMore";
 import { Loading } from "../../Loading";
+import { Issues } from "../../Issue/IssueList";
 import "../style.css";
 
 const updateQuery = (previousResult, { fetchMoreResult }) => {
@@ -49,11 +50,16 @@ const getUpdateQuery =
   };
 
 export const RepositoryList = ({ repositories, loading, fetchMore, entry }) => {
+  console.log(`repositories: ${JSON.stringify(repositories)}`);
   return (
     <Fragment>
       {repositories.edges.map(({ node }) => (
         <div key={node.id} className="RepositoryItem">
           <RepositoryItem {...node} />
+          <Issues
+            repositoryOwner={node.owner.login}
+            repositoryName={node.name}
+          />
         </div>
       ))}
       <FetchMore
