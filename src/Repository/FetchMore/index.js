@@ -5,7 +5,6 @@ import { ButtonUnobtrusive } from "../../Button";
 
 export const FetchMore = ({
   loading,
-  hasNextPage,
   variables,
   updateQuery,
   fetchMore,
